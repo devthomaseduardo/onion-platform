@@ -1,33 +1,40 @@
 const crypto = require('node:crypto');
 
-const messages = new Map();
+const messageRepository = require('../repositories/message.repository');
 
 function generateTrackingCode() {
   return crypto.randomBytes(8).toString('hex').toUpperCase();
 }
 
-function createMessage({ title, message }) {
+async function createMessage({ title, message }) {
   const trackingCode = generateTrackingCode();
 
-  const newMessage = {
+  const savedMessage = await messageRepository.createMessage({
     trackingCode,
     title,
     message,
     status: 'received',
-    createdAt: new Date().toISOString(),
-  };
-
-  messages.set(trackingCode, newMessage);
+  });
 
   return {
-    trackingCode,
-    status: newMessage.status,
-    createdAt: newMessage.createdAt,
+    trackingCode: savedMessage.tracking_code,
+    status: savedMessage.status,
+    createdAt: savedMessage.created_at,
   };
 }
 
-function findMessageByTrackingCode(trackingCode) {
-  return messages.get(trackingCode) || null;
+async function findMessageByTrackingCode(trackingCode) {
+  const message = await messageRepository.findByTrackingCode(trackingCode);
+
+  if (!message) {
+    return null;
+  }
+
+  return {
+    trackingCode: message.tracking_code,
+    status: message.status,
+    createdAt: message.created_at,
+  };
 }
 
 module.exports = {

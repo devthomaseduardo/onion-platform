@@ -3,7 +3,7 @@ const messageService = require('../services/message.service');
 async function createMessage(request, reply) {
   const { title, message } = request.body;
 
-  const result = messageService.createMessage({
+  const result = await messageService.createMessage({
     title,
     message,
   });
@@ -17,7 +17,7 @@ async function createMessage(request, reply) {
 async function getMessage(request, reply) {
   const { trackingCode } = request.params;
 
-  const message = messageService.findMessageByTrackingCode(trackingCode);
+  const message = await messageService.findMessageByTrackingCode(trackingCode);
 
   if (!message) {
     return reply.code(404).send({
@@ -29,11 +29,7 @@ async function getMessage(request, reply) {
 
   return reply.code(200).send({
     success: true,
-    data: {
-      trackingCode: message.trackingCode,
-      status: message.status,
-      createdAt: message.createdAt,
-    },
+    data: message,
   });
 }
 
